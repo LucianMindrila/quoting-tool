@@ -8,7 +8,7 @@ import DimModal from '@/components/DimModal';
 import MatPicker from '@/components/MatPicker';
 import Toast from '@/components/Toast';
 import { MATERIALS, EDGING_COST_PM, calcEdgingMm } from '@/lib/constants';
-import { panelFits, optimiseSheets } from '@/lib/optimizer';
+import { panelFits, optimiseSheets, layoutSheets } from '@/lib/optimizer';
 
 let _nextId = 1;
 function newId() { return _nextId++; }
@@ -167,7 +167,8 @@ export default function Home() {
         grandCut  += cutCost;
         grandEdge += edgeCost;
 
-        result.push({ mat, matId, pieces, sheets, nPieces, edgingM, matCost, cutCost, edgeCost });
+        const layout = layoutSheets(pieces, mat);
+        result.push({ mat, matId, pieces, sheets, nPieces, edgingM, matCost, cutCost, edgeCost, layout });
       }
 
       setBreakdown(result);

@@ -320,3 +320,68 @@ td input[type="number"] { font-family: var(--font-mono), monospace; font-size: 1
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 input[type=number] { -moz-appearance: textfield; }
+
+/* ── NESTING DIAGRAM ─────────────────────────────────────────── */
+.nest-root { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+
+.nest-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-barlow), sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--accent); background: none; border: none; cursor: pointer;
+  padding: 2px 0; transition: opacity 0.15s;
+}
+.nest-toggle:hover { opacity: 0.75; }
+
+.nest-body { margin-top: 10px; animation: fadeIn 0.2s ease; }
+
+.nest-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.nest-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--text-muted);
+}
+.nest-swatch {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 2px; flex-shrink: 0;
+}
+.nest-grain-tag {
+  font-size: 9px; background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text-dim); border-radius: 3px; padding: 0 4px; line-height: 16px;
+}
+
+.nest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.nest-sheet { display: flex; flex-direction: column; gap: 4px; }
+
+.nest-sheet-label {
+  font-size: 10px; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.nest-svg-wrap { position: relative; }
+
+.nest-svg {
+  display: block; border-radius: 4px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.nest-sheet-dims {
+  font-size: 9px; color: var(--text-dim); text-align: center;
+}
+
+.nest-tooltip {
+  position: absolute; bottom: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); font-size: 11px;
+  padding: 5px 8px; border-radius: 5px;
+  white-space: nowrap; pointer-events: none; z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { generateCSV, getCsvFilename } from '@/lib/csvExport';
 import { downloadQuotePDF, getQuotePDFBase64 } from '@/lib/pdfExport';
 import { MATERIALS, VAT } from '@/lib/constants';
+import NestingDiagram from './NestingDiagram';
 
 export default function QuotePanel({
   breakdown, grandMat, grandCut, grandEdge,
@@ -165,6 +166,12 @@ export default function QuotePanel({
                 <MatRow label={`Edging (${b.edgingM}m)`} val={fmt(b.edgeCost)} />
                 <MatRow label="Subtotal"       val={fmt(sub)} subtotal />
               </div>
+              <NestingDiagram
+                layout={b.layout}
+                sheetW={b.mat.sheetW}
+                sheetH={b.mat.sheetH}
+                pieces={b.pieces}
+              />
             </div>
           );
         })}

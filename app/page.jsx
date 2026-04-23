@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import CuttingTable from '@/components/CuttingTable';
 import QuotePanel from '@/components/QuotePanel';
 import DimModal from '@/components/DimModal';
+import MatPicker from '@/components/MatPicker';
 import Toast from '@/components/Toast';
 import { MATERIALS, EDGING_COST_PM, calcEdgingMm } from '@/lib/constants';
 import { panelFits, optimiseSheets } from '@/lib/optimizer';
@@ -14,24 +15,28 @@ function newId() { return _nextId++; }
 
 function makeRow(defaults = {}) {
   return {
-    id:     newId(),
-    matId:  defaults.matId  || '',
-    len:    defaults.len    != null ? String(defaults.len) : '',
-    wid:    defaults.wid    != null ? String(defaults.wid) : '',
-    qty:    defaults.qty    || 1,
-    grain:  defaults.grain === 'Yes' || defaults.grain === true,
-    edging: defaults.edging || 'No Edge',
-    notes:  defaults.notes  || '',
+    id:        newId(),
+    matId:     defaults.matId  || '',
+    len:       defaults.len    != null ? String(defaults.len) : '',
+    wid:       defaults.wid    != null ? String(defaults.wid) : '',
+    qty:       defaults.qty    || 1,
+    grain:     defaults.grain === 'Yes' || defaults.grain === true,
+    edging:    defaults.edging    || 'No Edge',
+    edgeThick: defaults.edgeThick || '1mm',
+    notes:     defaults.notes     || '',
   };
 }
 
 export default function Home() {
-  const [rows,         setRows]         = useState(() => [makeRow(), makeRow(), makeRow()]);
-  const [showIncVat,   setShowIncVat]   = useState(false);
-  const [customerName, setCustomerName] = useState('');
-  const [jobRef,       setJobRef]       = useState('');
-  const [dimModal,     setDimModal]     = useState(null);  // array of errors | null
+  const [rows,          setRows]          = useState(() => [makeRow(), makeRow(), makeRow()]);
+  const [showIncVat,    setShowIncVat]    = useState(false);
+  const [customerName,  setCustomerName]  = useState('');
+  const [jobRef,        setJobRef]        = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [dimModal,     setDimModal]     = useState(null);
   const [toastMsg,     setToastMsg]     = useState(null);
+  const [pickerOpen,   setPickerOpen]   = useState(false);
+  const [pickerRowId,  setPickerRowId]  = useState(null);
   const toastTimer = useRef(null);
 
   // ── Toast ────────────────────────────────────────────────────
@@ -73,6 +78,17 @@ export default function Home() {
     if (!confirm('Clear all rows?')) return;
     setRows([]);
   }, []);
+
+  const openPicker = useCallback((rowId) => {
+    setPickerRowId(rowId);
+    setPickerOpen(true);
+  }, []);
+
+  const handlePickerSelect = useCallback((matId) => {
+    if (pickerRowId != null) updateRow(pickerRowId, 'matId', matId);
+    setPickerOpen(false);
+    setPickerRowId(null);
+  }, [pickerRowId, updateRow]);
 
   // ── Dimension errors (fast, synchronous) ────────────────────
   const dimErrors = useMemo(() => {
@@ -171,14 +187,17 @@ export default function Home() {
           dimErrorIds={dimErrorIds}
           customerName={customerName}
           jobRef={jobRef}
+          customerEmail={customerEmail}
           onCustomerChange={setCustomerName}
           onJobRefChange={setJobRef}
+          onCustomerEmailChange={setCustomerEmail}
           onAddRows={addRows}
           onRemoveRow={removeRow}
           onUpdateRow={updateRow}
           onImportRows={importRows}
           onClearAll={clearAll}
           onShowToast={showToast}
+          onOpenPicker={openPicker}
         />
 
         <QuotePanel
@@ -190,12 +209,14 @@ export default function Home() {
           hasRows={hasValidRows}
           showIncVat={showIncVat}
           customerName={customerName || 'Customer'}
+          customerEmail={customerEmail}
           jobRef={jobRef || 'Job'}
           onShowToast={showToast}
         />
       </div>
 
       <DimModal errors={dimModal} onClose={() => setDimModal(null)} />
+      <MatPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handlePickerSelect} />
       <Toast message={toastMsg} />
     </>
   );

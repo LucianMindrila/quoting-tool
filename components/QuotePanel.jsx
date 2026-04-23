@@ -1,23 +1,26 @@
 'use client';
 
-import { downloadSingleCSV, downloadAllZip } from '@/lib/csvExport';
+import { useState } from 'react';
+import { generateCSV, getCsvFilename } from '@/lib/csvExport';
+import { downloadQuotePDF, getQuotePDFBase64 } from '@/lib/pdfExport';
 import { MATERIALS, VAT } from '@/lib/constants';
 
 export default function QuotePanel({
   breakdown, grandMat, grandCut, grandEdge,
   dimErrorCount, hasRows,
-  showIncVat, customerName, jobRef,
+  showIncVat, customerName, customerEmail, jobRef,
   onShowToast,
 }) {
+  const [ordering, setOrdering] = useState(false);
+
   const grandTotal = (grandMat ?? 0) + (grandCut ?? 0) + (grandEdge ?? 0);
   const m        = showIncVat ? (1 + VAT) : 1;
   const vatLabel = showIncVat ? ' (inc. VAT)' : ' (ex. VAT)';
   const fmt      = v => `£${(v * m).toFixed(2)}`;
 
   const customer = customerName || 'Customer';
-  const ref      = jobRef || 'Job';
+  const ref      = jobRef       || 'Job';
 
-  // Build material groups object for CSV export
   function getGroups() {
     if (!breakdown) return null;
     const groups = {};
@@ -25,21 +28,77 @@ export default function QuotePanel({
     return groups;
   }
 
-  async function handleDownloadSingle(matId) {
-    const groups = getGroups();
-    downloadSingleCSV(matId, groups, customer, ref);
-    onShowToast(`✓ Downloaded: ${MATERIALS[matId].name.split('—')[0].trim()}`);
+  async function handleDownloadQuote() {
+    if (!breakdown) return;
+    try {
+      await downloadQuotePDF({
+        customerName: customer,
+        customerEmail,
+        jobRef: ref,
+        breakdown,
+        grandMat, grandCut, grandEdge,
+        showIncVat,
+      });
+      onShowToast('✓ Quote PDF downloaded');
+    } catch (err) {
+      console.error('[QuotePanel] PDF error', err);
+      onShowToast('⚠ Failed to generate PDF');
+    }
   }
 
-  async function handleDownloadAll(openEmail = false) {
-    const groups = getGroups();
-    if (!groups) return;
-    const matIds = Object.keys(groups);
-    await downloadAllZip(groups, customer, ref, openEmail);
-    onShowToast(`✓ ZIP downloaded — ${matIds.length} CSV file${matIds.length !== 1 ? 's' : ''} inside`);
+  async function handlePlaceOrder() {
+    if (!customerEmail) {
+      onShowToast('⚠ Add a customer email in Job Details to place an order');
+      return;
+    }
+    if (!breakdown) return;
+
+    setOrdering(true);
+    try {
+      // PDF
+      const pdfBase64 = await getQuotePDFBase64({
+        customerName: customer,
+        customerEmail,
+        jobRef: ref,
+        breakdown,
+        grandMat, grandCut, grandEdge,
+        showIncVat,
+      });
+
+      // CSVs
+      const groups   = getGroups();
+      const csvFiles = breakdown.map(b => ({
+        filename: getCsvFilename(b.matId, customer, ref),
+        content:  generateCSV(b.matId, groups[b.matId], customer, ref),
+      }));
+
+      const res  = await fetch('/api/send-order', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: customer,
+          customerEmail,
+          jobRef: ref,
+          pdfBase64,
+          csvFiles,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        onShowToast(`✓ Order placed — emails sent to ${customerEmail} and lucian@dtsolutionsltd.co.uk`);
+      } else {
+        onShowToast(`⚠ Email failed: ${data.error || 'unknown error'}`);
+      }
+    } catch (err) {
+      console.error('[QuotePanel] place-order error', err);
+      onShowToast(`⚠ Error: ${err.message}`);
+    } finally {
+      setOrdering(false);
+    }
   }
 
-  // Empty state
+  // ── Empty state ──────────────────────────────────────────────────
   if (!hasRows) {
     return (
       <div className="right-panel">
@@ -52,7 +111,7 @@ export default function QuotePanel({
     );
   }
 
-  // Dim error state
+  // ── Dim error state ──────────────────────────────────────────────
   if (dimErrorCount > 0) {
     return (
       <div className="right-panel">
@@ -68,7 +127,7 @@ export default function QuotePanel({
     );
   }
 
-  // Loading state (breakdown not yet computed)
+  // ── Loading state ────────────────────────────────────────────────
   if (!breakdown) {
     return (
       <div className="right-panel">
@@ -126,33 +185,34 @@ export default function QuotePanel({
         </div>
       </div>
 
-      <div className="csv-downloads-section">
-        <div className="csv-downloads-label">Individual CSVs</div>
-        {breakdown.map(b => (
-          <div key={b.matId} className="csv-row">
-            <span className="csv-row-name" title={b.mat.name}>{b.mat.name}</span>
-            <button className="btn-csv" onClick={() => handleDownloadSingle(b.matId)}>
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1v9M4 7l3 3 3-3M1 13h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              CSV
-            </button>
-          </div>
-        ))}
-      </div>
-
       <div className="submit-area">
-        <button className="btn btn-accent" onClick={() => handleDownloadAll(true)}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1v10M4 8l4 4 4-4M2 13h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        <button className="btn btn-outline" onClick={handleDownloadQuote}>
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 2v4h4M8 8v5M6 11l2 2 2-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
-          Download All &amp; Send Quote
+          Download Quote
         </button>
-        <button className="btn btn-ghost" onClick={() => handleDownloadAll(false)}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1v9M4 7l3 3 3-3M1 13h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Download All CSVs (ZIP)
+        <button
+          className="btn btn-accent"
+          onClick={handlePlaceOrder}
+          disabled={ordering}
+        >
+          {ordering ? (
+            <>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ animation:'spin 1s linear infinite' }}>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="30 60" strokeLinecap="round"/>
+              </svg>
+              Sending…
+            </>
+          ) : (
+            <>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                <path d="M2 3l12 5-12 5V9.5l8-1.5-8-1.5V3z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Place Order
+            </>
+          )}
         </button>
       </div>
     </div>

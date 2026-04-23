@@ -1,25 +1,23 @@
 'use client';
 
-import { MATERIALS, MATERIAL_GROUPS, EDGING_OPTS } from '@/lib/constants';
+import { MATERIALS, EDGING_OPTS } from '@/lib/constants';
 
-export default function CuttingRow({ row, rowNum, onChange, onRemove, hasError }) {
+export default function CuttingRow({ row, rowNum, onChange, onRemove, onOpenPicker, hasError }) {
   const update = (field, value) => onChange(row.id, field, value);
+  const mat = row.matId ? MATERIALS[row.matId] : null;
 
   return (
     <tr className={hasError ? 'dim-error' : ''}>
       <td><span className="row-num">{rowNum}</span></td>
 
       <td className="col-mat">
-        <select value={row.matId} onChange={e => update('matId', e.target.value)}>
-          <option value="">— Select Material —</option>
-          {MATERIAL_GROUPS.map(group => (
-            <optgroup key={group.label} label={group.label}>
-              {group.keys.map(key => (
-                <option key={key} value={key}>{MATERIALS[key].name}</option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+        <button
+          className={`mat-picker-btn ${row.matId ? 'has-value' : ''}`}
+          onClick={() => onOpenPicker(row.id)}
+          title={mat ? mat.name : 'Click to select material'}
+        >
+          {mat ? mat.display : '— Select Material —'}
+        </button>
         {hasError && <span className="dim-error-badge">&gt; board</span>}
       </td>
 
@@ -57,6 +55,13 @@ export default function CuttingRow({ row, rowNum, onChange, onRemove, hasError }
       <td className="col-edge">
         <select value={row.edging} onChange={e => update('edging', e.target.value)}>
           {EDGING_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </td>
+
+      <td className="col-thick">
+        <select value={row.edgeThick} onChange={e => update('edgeThick', e.target.value)}>
+          <option value="1mm">1mm</option>
+          <option value="2mm">2mm</option>
         </select>
       </td>
 

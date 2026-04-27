@@ -28,7 +28,7 @@ function makeRow(defaults = {}) {
 }
 
 export default function Home() {
-  const [rows,          setRows]          = useState(() => [makeRow(), makeRow(), makeRow()]);
+  const [rows,          setRows]          = useState(() => Array.from({ length: 15 }, () => makeRow()));
   const [showIncVat,    setShowIncVat]    = useState(false);
   const [customerName,  setCustomerName]  = useState('');
   const [jobRef,        setJobRef]        = useState('');
@@ -49,10 +49,13 @@ export default function Home() {
   // ── Row mutations ────────────────────────────────────────────
   const addRows = useCallback((count = 1, defaults = {}) => {
     setRows(prev => {
+      const lastMatId = prev.length ? prev[prev.length - 1].matId : '';
       const newRows = [];
       for (let i = 0; i < count; i++) {
         const d = Array.isArray(defaults) ? (defaults[i] || {}) : defaults;
-        newRows.push(makeRow(d));
+        // Only the first new row inherits the material; the rest fill incrementally
+        const inheritMat = i === 0 ? { matId: lastMatId } : {};
+        newRows.push(makeRow({ ...inheritMat, ...d }));
       }
       return [...prev, ...newRows];
     });
@@ -63,7 +66,18 @@ export default function Home() {
   }, []);
 
   const updateRow = useCallback((id, field, value) => {
-    setRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+    setRows(prev => {
+      const rowIndex = prev.findIndex(r => r.id === id);
+      if (rowIndex === -1) return prev;
+      const updatedRow = { ...prev[rowIndex], [field]: value };
+      const newRows = prev.map(r => r.id === id ? updatedRow : r);
+      // Propagate material to the immediately next row if it has no material yet
+      const nextRow = newRows[rowIndex + 1];
+      if (nextRow && !nextRow.matId && updatedRow.matId) {
+        newRows[rowIndex + 1] = { ...nextRow, matId: updatedRow.matId };
+      }
+      return newRows;
+    });
   }, []);
 
   const importRows = useCallback((imported) => {

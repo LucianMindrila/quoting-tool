@@ -8,7 +8,7 @@ import DimModal from '@/components/DimModal';
 import MatPicker from '@/components/MatPicker';
 import Toast from '@/components/Toast';
 import { MATERIALS, EDGING_COST_PM, calcEdgingMm } from '@/lib/constants';
-import { panelFits, optimiseSheets, layoutSheets } from '@/lib/optimizer';
+import { panelFits, optimiseLayout } from '@/lib/optimizer';
 
 let _nextId = 1;
 function newId() { return _nextId++; }
@@ -167,7 +167,7 @@ export default function Home() {
       for (const [matId, pieces] of Object.entries(matGroups)) {
         const mat     = MATERIALS[matId];
         const nPieces = pieces.reduce((s, p) => s + p.qty, 0);
-        const sheets  = optimiseSheets(pieces, mat);
+        const { sheets, layout } = optimiseLayout(pieces, mat);
 
         let totalEdgeMm = 0;
         for (const p of pieces) totalEdgeMm += calcEdgingMm(p.len, p.wid, p.qty, p.edging);
@@ -180,8 +180,6 @@ export default function Home() {
         grandMat  += matCost;
         grandCut  += cutCost;
         grandEdge += edgeCost;
-
-        const layout = layoutSheets(pieces, mat);
         result.push({ mat, matId, pieces, sheets, nPieces, edgingM, matCost, cutCost, edgeCost, layout });
       }
 

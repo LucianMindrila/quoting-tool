@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { generateCSV, getCsvFilename } from '@/lib/csvExport';
-import { downloadQuotePDF, getQuotePDFBase64 } from '@/lib/pdfExport';
+import { downloadQuotePDF } from '@/lib/pdfExport';
 import { MATERIALS, VAT } from '@/lib/constants';
 import NestingDiagram from './NestingDiagram';
 
@@ -21,13 +20,6 @@ export default function QuotePanel({
 
   const customer = customerName || 'Customer';
   const ref      = jobRef       || 'Job';
-
-  function getGroups() {
-    if (!breakdown) return null;
-    const groups = {};
-    for (const b of breakdown) groups[b.matId] = b.pieces;
-    return groups;
-  }
 
   async function handleDownloadQuote() {
     if (!breakdown) return;
@@ -56,23 +48,6 @@ export default function QuotePanel({
 
     setOrdering(true);
     try {
-      // PDF
-      const pdfBase64 = await getQuotePDFBase64({
-        customerName: customer,
-        customerEmail,
-        jobRef: ref,
-        breakdown,
-        grandMat, grandCut, grandEdge,
-        showIncVat,
-      });
-
-      // CSVs
-      const groups   = getGroups();
-      const csvFiles = breakdown.map(b => ({
-        filename: getCsvFilename(b.matId, customer, ref),
-        content:  generateCSV(b.matId, groups[b.matId], customer, ref),
-      }));
-
       const res  = await fetch('/api/send-order', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,14 +55,13 @@ export default function QuotePanel({
           customerName: customer,
           customerEmail,
           jobRef: ref,
-          pdfBase64,
-          csvFiles,
+          breakdown,
         }),
       });
       const data = await res.json();
 
       if (data.ok) {
-        onShowToast(`✓ Order placed — emails sent to ${customerEmail} and lucian@dtsolutionsltd.co.uk`);
+        onShowToast(`✓ Order placed — confirmation sent to ${customerEmail}`);
       } else {
         onShowToast(`⚠ Email failed: ${data.error || 'unknown error'}`);
       }

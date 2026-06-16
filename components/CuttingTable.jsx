@@ -99,10 +99,6 @@ export default function CuttingTable({
         the decor code in the Notes column and our team will be in touch to confirm availability and
         any price adjustments.
       </div>
-      <div className="notice" style={{ marginTop:6, background:'var(--bg2)', borderLeft:'3px solid #0F6E56' }}>
-        <strong>All prices shown include VAT (20%).</strong>
-      </div>
-
       <div className="cutting-list-section" style={{ position: 'relative' }}>
         {!jobDetailsValid && (
           <div className="table-lock-overlay">

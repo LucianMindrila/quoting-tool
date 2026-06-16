@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { downloadQuotePDF } from '@/lib/pdfExport';
-import { MATERIALS, VAT } from '@/lib/constants';
+import { MATERIALS } from '@/lib/constants';
 import NestingDiagram from './NestingDiagram';
 
 export default function QuotePanel({
@@ -14,9 +14,7 @@ export default function QuotePanel({
   const [ordering, setOrdering] = useState(false);
 
   const grandTotal = (grandMat ?? 0) + (grandCut ?? 0) + (grandEdge ?? 0);
-  const m        = 1 + VAT;
-  const vatLabel = ' (inc. VAT)';
-  const fmt      = v => `£${(v * m).toFixed(2)}`;
+  const fmt = v => `£${Number(v).toFixed(2)}`;
 
   const customer = customerName || 'Customer';
   const ref      = jobRef       || 'Job';
@@ -156,10 +154,7 @@ export default function QuotePanel({
           <TotalRow label="Materials" val={fmt(grandMat)} />
           <TotalRow label="Cutting"   val={fmt(grandCut)} />
           <TotalRow label="Edging"    val={fmt(grandEdge)} />
-          <TotalRow label="Total (inc. VAT)" val={fmt(grandTotal)} grand />
-        </div>
-        <div style={{ fontSize:11, color:'var(--text-dim)', textAlign:'right', marginTop:4 }}>
-          All prices include VAT (20%)
+          <TotalRow label="Total" val={fmt(grandTotal)} grand />
         </div>
         <div style={{ fontSize:11, color:'var(--text-dim)', textAlign:'right', marginTop:2 }}>
           Optimised: <span className="algo-badge">{algoBadge}</span>

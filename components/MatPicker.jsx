@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   MFC_DECORS, PS_GLOSS_DECORS, PS_MATT_DECORS, TM_DECORS,
-  EGGER_GRP_PRICE, MATERIALS, VAT,
+  EGGER_GRP_PRICE, MATERIALS,
 } from '@/lib/constants';
 
-const incVat = v => (v * (1 + VAT)).toFixed(2);
+const fmt = v => Number(v).toFixed(2);
 
 const MDF_IDS = ['mdf-18-2440','mdf-18-3050','mdf-12','mdf-9','mdf-6'];
 const MRMDF_IDS = ['mrmdf-18-2440','mrmdf-18-3050','mrmdf-12','mrmdf-9','mrmdf-6'];
@@ -76,7 +76,7 @@ export default function MatPicker({ open, onClose, onSelect }) {
             <button className={`picker-sub-tab ${grpFilter === 'all' ? 'active' : ''}`} onClick={() => setGrpFilter('all')}>All</button>
             {MFC_GROUPS.map(g => (
               <button key={g} className={`picker-sub-tab ${grpFilter == g ? 'active' : ''}`} onClick={() => setGrpFilter(g)}>
-                Grp {g} — £{incVat(EGGER_GRP_PRICE[g])}
+                Grp {g} — £{fmt(EGGER_GRP_PRICE[g])}
               </button>
             ))}
           </div>
@@ -92,7 +92,7 @@ export default function MatPicker({ open, onClose, onSelect }) {
             <div key={grp}>
               <div className="picker-group-label">
                 Group {grp}
-                <span className="grp-price">£{incVat(EGGER_GRP_PRICE[grp])}/sht inc VAT</span>
+                <span className="grp-price">£{fmt(EGGER_GRP_PRICE[grp])}/sht</span>
               </div>
               {grpItems.map(item => (
                 <div key={item.matId} className="picker-item" onClick={() => pick(item.matId)}>
@@ -106,13 +106,13 @@ export default function MatPicker({ open, onClose, onSelect }) {
       );
     }
 
-    if (subTab === 'ps-gloss') return renderSimpleList(PS_GLOSS_DECORS.map(d => ({ matId:'eg-'+d.id, code:d.code, name:d.name, price:`£${incVat(182)}/sht` })));
-    if (subTab === 'ps-matt')  return renderSimpleList(PS_MATT_DECORS.map(d => ({ matId:'eg-'+d.id, code:d.code, name:d.name, price:`£${incVat(194)}/sht` })));
+    if (subTab === 'ps-gloss') return renderSimpleList(PS_GLOSS_DECORS.map(d => ({ matId:'eg-'+d.id, code:d.code, name:d.name, price:`£${fmt(182)}/sht` })));
+    if (subTab === 'ps-matt')  return renderSimpleList(PS_MATT_DECORS.map(d => ({ matId:'eg-'+d.id, code:d.code, name:d.name, price:`£${fmt(194)}/sht` })));
     if (subTab === 'tm') {
       const byType = {};
       TM_DECORS.forEach(d => {
         if (!byType[d.tmtype]) byType[d.tmtype] = [];
-        byType[d.tmtype].push({ matId:'eg-'+d.id, code:d.code, name:d.name, price:`£${incVat(d.price)}/sht` });
+        byType[d.tmtype].push({ matId:'eg-'+d.id, code:d.code, name:d.name, price:`£${fmt(d.price)}/sht` });
       });
       return (
         <>
@@ -149,8 +149,8 @@ export default function MatPicker({ open, onClose, onSelect }) {
       matId: id,
       code:  MATERIALS[id].display,
       name:  '',
-      price: MATERIALS[id].price ? `£${incVat(MATERIALS[id].price)}/sht` : undefined,
-      cut:   `Cut: £${incVat(MATERIALS[id].cutCost)}/sht`,
+      price: MATERIALS[id].price ? `£${fmt(MATERIALS[id].price)}/sht` : undefined,
+      cut:   `Cut: £${fmt(MATERIALS[id].cutCost)}/sht`,
     })));
   }
 
@@ -159,8 +159,8 @@ export default function MatPicker({ open, onClose, onSelect }) {
       matId: id,
       code:  MATERIALS[id].display,
       name:  '',
-      price: `£${incVat(MATERIALS[id].price)}/sht`,
-      cut:   `Cut: £${incVat(MATERIALS[id].cutCost)}/sht`,
+      price: `£${fmt(MATERIALS[id].price)}/sht`,
+      cut:   `Cut: £${fmt(MATERIALS[id].cutCost)}/sht`,
     })));
   }
 
@@ -170,7 +170,7 @@ export default function MatPicker({ open, onClose, onSelect }) {
       code:  MATERIALS[id].display,
       name:  '',
       free:  'Free — your board',
-      cut:   `Cut: £${incVat(MATERIALS[id].cutCost)}/sht`,
+      cut:   `Cut: £${fmt(MATERIALS[id].cutCost)}/sht`,
     })));
   }
 

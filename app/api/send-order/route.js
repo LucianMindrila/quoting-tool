@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { generateXLSBase64, getXLSFilename } from '@/lib/xlsExport';
+import { getInvoicePDFBase64 } from '@/lib/pdfExport';
 
 const CUTTING_EDGE_EMAIL = 'cuttingedgebespoke@gmail.com';
 
@@ -134,6 +135,17 @@ export async function POST(req) {
     const xlsFilename = getXLSFilename(customerName, jobRef);
     const xlsBuffer  = Buffer.from(xlsBase64, 'base64');
 
+    const grandMat   = breakdown.reduce((s, b) => s + b.matCost, 0);
+    const grandCut   = breakdown.reduce((s, b) => s + b.cutCost, 0);
+    const grandEdge  = breakdown.reduce((s, b) => s + b.edgeCost, 0);
+
+    const invoiceBase64 = await getInvoicePDFBase64({
+      customerName, customerEmail, jobRef,
+      breakdown, grandMat, grandCut, grandEdge,
+    });
+    const invoiceBuffer = Buffer.from(invoiceBase64, 'base64');
+    const invoiceFilename = `Invoice_${jobRef.replace(/[^a-z0-9]/gi, '_')}_${customerName.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+
     const transporter = getTransporter();
 
     // ── Email 1: confirmation to customer ────────────────────────────
@@ -156,6 +168,11 @@ export async function POST(req) {
           filename:    xlsFilename,
           content:     xlsBuffer,
           contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+        {
+          filename:    invoiceFilename,
+          content:     invoiceBuffer,
+          contentType: 'application/pdf',
         },
       ],
     });

@@ -20,16 +20,6 @@ export default function Header() {
         <text x="60" y="50" fontFamily="system-ui,sans-serif" fontSize="27" fontWeight="700" fill="#0F6E56">EDGE</text>
       </svg>
       <span className="header-tag">One stop shop for all your panel processing</span>
-      <div className="header-actions">
-        <a
-          className="btn btn-outline"
-          href="/Cutting-Edge-Pricing-Sheet.xlsx"
-          download
-          style={{ fontSize:12, padding:'4px 12px' }}
-        >
-          Pricing Sheet
-        </a>
-      </div>
     </header>
   );
 }

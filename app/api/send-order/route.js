@@ -43,6 +43,7 @@ function customerEmailHTML(customerName, jobRef, fulfilment) {
             </tr>` : ''}
           </table>
           ${f.earlyDate ? `<p style="margin:10px 0 0;font-size:12px;color:#b45309;">⚠ Your requested date is within our standard 5 working day lead time. We will contact you shortly to confirm availability.</p>` : ''}
+          ${f.type === 'delivery' ? `<p style="margin:10px 0 0;font-size:12px;color:#1e40af;background:#eff6ff;padding:10px 12px;border-radius:4px;border-left:3px solid #93c5fd;">📦 <strong>Please note:</strong> An additional delivery charge will apply. We will be in touch to confirm your delivery date, time and the delivery cost before we process your order.</p>` : ''}
         </td>
       </tr>
     </table>` : '';

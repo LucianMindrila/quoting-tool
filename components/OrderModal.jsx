@@ -201,6 +201,9 @@ export default function OrderModal({ open, jobRef, onClose, onConfirm }) {
         {/* Delivery address */}
         {type === 'delivery' && (
           <div style={{ marginBottom:20 }}>
+            <div style={{ background:'#EFF6FF', border:'1.5px solid #93C5FD', borderRadius:8, padding:'11px 14px', marginBottom:14, fontSize:13, color:'#1E40AF', lineHeight:1.5 }}>
+              ℹ️ <strong>Delivery is available within a 30-mile radius.</strong> An additional delivery charge will apply — we will contact you to confirm the delivery date, time and cost before processing your order.
+            </div>
             <div style={s.sectionLabel}>Delivery Address</div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {[

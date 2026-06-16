@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { generateXLSBase64, getXLSFilename } from '@/lib/xlsExport';
 import { getInvoicePDFBase64 } from '@/lib/pdfExport';
+import { generateICS } from '@/lib/icsExport';
 
 const CUTTING_EDGE_EMAIL = 'cuttingedgebespoke@gmail.com';
 
@@ -14,7 +15,38 @@ function getTransporter() {
   });
 }
 
-function customerEmailHTML(customerName, jobRef) {
+function customerEmailHTML(customerName, jobRef, fulfilment) {
+  const f = fulfilment || {};
+  const label = f.type === 'delivery' ? 'Delivery' : 'Collection';
+  const addrStr = f.type === 'delivery' && f.address
+    ? [f.address.name, f.address.line1, f.address.line2, f.address.postcode].filter(Boolean).join(', ')
+    : null;
+
+  const fulfilmentBlock = f.type ? `
+    <!-- Fulfilment -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#f0f9f5;border-radius:6px;border-left:4px solid #0F6E56;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#0F6E56;">${label} Details</p>
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="font-size:13px;color:#666;padding:3px 16px 3px 0;min-width:140px;">${label} Date</td>
+              <td style="font-size:13px;color:#222;font-weight:600;">${f.date}</td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;color:#666;padding:3px 16px 3px 0;">Time Slot</td>
+              <td style="font-size:13px;color:#222;font-weight:600;">${f.time}</td>
+            </tr>
+            ${addrStr ? `<tr>
+              <td style="font-size:13px;color:#666;padding:3px 16px 3px 0;">Delivery Address</td>
+              <td style="font-size:13px;color:#222;font-weight:600;">${addrStr}</td>
+            </tr>` : ''}
+          </table>
+          ${f.earlyDate ? `<p style="margin:10px 0 0;font-size:12px;color:#b45309;">⚠ Your requested date is within our standard 5 working day lead time. We will contact you shortly to confirm availability.</p>` : ''}
+        </td>
+      </tr>
+    </table>` : '';
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -63,10 +95,6 @@ function customerEmailHTML(customerName, jobRef) {
               Thank you for placing your order with Cutting Edge. We have received your cutting list
               and our team will begin processing it shortly.
             </p>
-            <p style="font-size:15px;color:#333;line-height:1.6;">
-              If you have any questions or need to make changes, please don't hesitate to get in touch
-              by replying to this email.
-            </p>
 
             <!-- Order summary box -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;background:#f0f9f5;border-radius:6px;border-left:4px solid #0F6E56;">
@@ -86,6 +114,16 @@ function customerEmailHTML(customerName, jobRef) {
                 </td>
               </tr>
             </table>
+
+            ${fulfilmentBlock}
+
+            <p style="font-size:15px;color:#333;line-height:1.6;">
+              A calendar invite is attached — click it to add this ${f.type || 'appointment'} to your calendar.
+            </p>
+            <p style="font-size:15px;color:#333;line-height:1.6;">
+              If you have any questions or need to make changes, please don't hesitate to get in touch
+              by replying to this email.
+            </p>
 
             <p style="font-size:15px;color:#333;line-height:1.6;">Kind regards,<br>
             <strong>The Cutting Edge Team</strong></p>
@@ -148,6 +186,13 @@ export async function POST(req) {
     const xlsFilename = getXLSFilename(customerName, jobRef);
     const xlsBuffer  = Buffer.from(xlsBase64, 'base64');
 
+    const icsContent  = fulfilment?.isoDate ? generateICS({
+      jobRef, customerName,
+      type:    fulfilment.type,
+      isoDate: fulfilment.isoDate,
+      time:    fulfilment.time,
+    }) : null;
+
     const grandMat   = breakdown.reduce((s, b) => s + b.matCost, 0);
     const grandCut   = breakdown.reduce((s, b) => s + b.cutCost, 0);
     const grandEdge  = breakdown.reduce((s, b) => s + b.edgeCost, 0);
@@ -161,21 +206,33 @@ export async function POST(req) {
 
     const transporter = getTransporter();
 
+    const icsAttachment = icsContent ? [{
+      filename:    `${jobRef.replace(/[^a-z0-9]/gi,'_')}.ics`,
+      content:     Buffer.from(icsContent, 'utf8'),
+      contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+    }] : [];
+
+    // Embed structured data for Apps Script calendar automation
+    const calendarDataComment = fulfilment?.isoDate
+      ? `<!--CUTTING_EDGE_CALENDAR:${JSON.stringify({ jobRef, customerName, type: fulfilment.type, isoDate: fulfilment.isoDate, time: fulfilment.time })}-->`
+      : '';
+
     // ── Email 1: confirmation to customer ────────────────────────────
     await transporter.sendMail({
-      from:    `Cutting Edge <${CUTTING_EDGE_EMAIL}>`,
-      replyTo: CUTTING_EDGE_EMAIL,
-      to:      customerEmail,
-      subject: `Order Confirmation — ${jobRef}`,
-      html:    customerEmailHTML(customerName, jobRef),
+      from:        `Cutting Edge <${CUTTING_EDGE_EMAIL}>`,
+      replyTo:     CUTTING_EDGE_EMAIL,
+      to:          customerEmail,
+      subject:     `Order Confirmation — ${jobRef}`,
+      html:        customerEmailHTML(customerName, jobRef, fulfilment),
+      attachments: icsAttachment,
     });
 
-    // ── Email 2: order notification to admin with XLS ─────────────────
+    // ── Email 2: order notification to admin with XLS + invoice ──────
     await transporter.sendMail({
       from:    `Cutting Edge <${CUTTING_EDGE_EMAIL}>`,
       to:      CUTTING_EDGE_EMAIL,
       subject: `Order — ${customerName} — ${jobRef}`,
-      html:    adminEmailHTML(customerName, customerEmail, jobRef, fulfilment),
+      html:    adminEmailHTML(customerName, customerEmail, jobRef, fulfilment) + calendarDataComment,
       attachments: [
         {
           filename:    xlsFilename,
@@ -187,6 +244,7 @@ export async function POST(req) {
           content:     invoiceBuffer,
           contentType: 'application/pdf',
         },
+        ...icsAttachment,
       ],
     });
 

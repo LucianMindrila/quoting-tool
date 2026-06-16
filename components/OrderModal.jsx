@@ -81,7 +81,8 @@ export default function OrderModal({ open, jobRef, onClose, onConfirm }) {
 
   function handleConfirm() {
     const dateStr = selectedDate.toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
-    onConfirm({ type, date: dateStr, time: selectedTime, address: type === 'delivery' ? address : null, earlyDate: showWarning });
+    const isoDate = toISO(selectedDate);
+    onConfirm({ type, date: dateStr, isoDate, time: selectedTime, address: type === 'delivery' ? address : null, earlyDate: showWarning });
   }
 
   // ── Calendar ──────────────────────────────────────────────────────

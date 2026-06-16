@@ -29,7 +29,6 @@ function makeRow(defaults = {}) {
 
 export default function Home() {
   const [rows,          setRows]          = useState(() => Array.from({ length: 15 }, () => makeRow()));
-  const [showIncVat,    setShowIncVat]    = useState(false);
   const [customerName,  setCustomerName]  = useState('');
   const [jobRef,        setJobRef]        = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -192,7 +191,7 @@ export default function Home() {
 
   return (
     <>
-      <Header showIncVat={showIncVat} onSetVat={setShowIncVat} />
+      <Header />
 
       <div className="main-wrap">
         <CuttingTable
@@ -220,7 +219,7 @@ export default function Home() {
           grandEdge={quoteGrand.edge}
           dimErrorCount={dimErrors.length}
           hasRows={hasValidRows}
-          showIncVat={showIncVat}
+          showIncVat={true}
           customerName={customerName || 'Customer'}
           customerEmail={customerEmail}
           jobRef={jobRef || 'Job'}

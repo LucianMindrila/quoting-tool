@@ -1,6 +1,6 @@
 'use client';
 
-export default function Header({ showIncVat, onSetVat }) {
+export default function Header() {
   return (
     <header className="site-header">
       <svg viewBox="0 0 200 64" width="140" height="45" xmlns="http://www.w3.org/2000/svg" aria-label="Cutting Edge">
@@ -19,22 +19,16 @@ export default function Header({ showIncVat, onSetVat }) {
         <text x="62" y="20" fontFamily="system-ui,sans-serif" fontSize="16" fontWeight="700" fill="#2C2C2A">Cutting</text>
         <text x="60" y="50" fontFamily="system-ui,sans-serif" fontSize="27" fontWeight="700" fill="#0F6E56">EDGE</text>
       </svg>
-      <span className="header-tag">Panel Sizing Quote</span>
+      <span className="header-tag">One stop shop for all your panel processing</span>
       <div className="header-actions">
-        <div className="vat-toggle">
-          <button
-            className={!showIncVat ? 'active' : ''}
-            onClick={() => onSetVat(false)}
-          >
-            Ex VAT
-          </button>
-          <button
-            className={showIncVat ? 'active' : ''}
-            onClick={() => onSetVat(true)}
-          >
-            Inc VAT
-          </button>
-        </div>
+        <a
+          className="btn btn-outline"
+          href="/Cutting-Edge-Pricing-Sheet.xlsx"
+          download
+          style={{ fontSize:12, padding:'4px 12px' }}
+        >
+          Pricing Sheet
+        </a>
       </div>
     </header>
   );

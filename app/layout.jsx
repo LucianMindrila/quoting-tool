@@ -24,7 +24,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: 'Panel Sizing Quote — Cutting Edge',
+  title: 'Cutting Edge — One stop shop for panel processing',
 };
 
 export default function RootLayout({ children }) {

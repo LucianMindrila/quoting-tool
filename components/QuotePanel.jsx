@@ -14,8 +14,8 @@ export default function QuotePanel({
   const [ordering, setOrdering] = useState(false);
 
   const grandTotal = (grandMat ?? 0) + (grandCut ?? 0) + (grandEdge ?? 0);
-  const m        = showIncVat ? (1 + VAT) : 1;
-  const vatLabel = showIncVat ? ' (inc. VAT)' : ' (ex. VAT)';
+  const m        = 1 + VAT;
+  const vatLabel = ' (inc. VAT)';
   const fmt      = v => `£${(v * m).toFixed(2)}`;
 
   const customer = customerName || 'Customer';
@@ -156,12 +156,12 @@ export default function QuotePanel({
           <TotalRow label="Materials" val={fmt(grandMat)} />
           <TotalRow label="Cutting"   val={fmt(grandCut)} />
           <TotalRow label="Edging"    val={fmt(grandEdge)} />
-          {!showIncVat && (
-            <TotalRow label="VAT (20%)" val={`£${(grandTotal * VAT).toFixed(2)}`} />
-          )}
-          <TotalRow label={`Total${vatLabel}`} val={fmt(grandTotal)} grand />
+          <TotalRow label="Total (inc. VAT)" val={fmt(grandTotal)} grand />
         </div>
-        <div style={{ fontSize:11, color:'var(--text-dim)', textAlign:'right', marginTop:-6 }}>
+        <div style={{ fontSize:11, color:'var(--text-dim)', textAlign:'right', marginTop:4 }}>
+          All prices include VAT (20%)
+        </div>
+        <div style={{ fontSize:11, color:'var(--text-dim)', textAlign:'right', marginTop:2 }}>
           Optimised: <span className="algo-badge">{algoBadge}</span>
         </div>
       </div>

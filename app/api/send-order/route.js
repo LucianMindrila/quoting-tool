@@ -108,20 +108,33 @@ function customerEmailHTML(customerName, jobRef) {
 </html>`;
 }
 
-function adminEmailHTML(customerName, customerEmail, jobRef) {
+function adminEmailHTML(customerName, customerEmail, jobRef, fulfilment) {
+  const f = fulfilment || {};
+  const fulfilmentRows = f.type ? `
+  <tr><td style="color:#666;padding-right:16px;padding-top:12px;"><strong>Fulfilment</strong></td><td><strong style="color:#0F6E56;text-transform:capitalize;">${f.type}</strong></td></tr>
+  <tr><td style="color:#666;padding-right:16px;">Requested Date</td><td><strong>${f.date || '—'}</strong></td></tr>
+  <tr><td style="color:#666;padding-right:16px;">Requested Time</td><td><strong>${f.time || '—'}</strong></td></tr>
+  ${f.type === 'delivery' && f.address ? `
+  <tr><td style="color:#666;padding-right:16px;">Delivery Address</td><td>
+    ${[f.address.name, f.address.line1, f.address.line2, f.address.postcode].filter(Boolean).join(', ')}
+  </td></tr>` : ''}
+  ${f.earlyDate ? `<tr><td colspan="2" style="color:#b45309;padding-top:8px;">⚠ Requested date is within 5 working days — contact customer to confirm.</td></tr>` : ''}
+  ` : '';
+
   return `
 <p><strong>New order received via Cutting Edge Quoting Tool</strong></p>
 <table cellpadding="4" cellspacing="0" style="font-family:Arial,sans-serif;font-size:14px;border-collapse:collapse;">
   <tr><td style="color:#666;padding-right:16px;">Customer</td><td><strong>${customerName}</strong></td></tr>
   <tr><td style="color:#666;padding-right:16px;">Email</td><td>${customerEmail}</td></tr>
   <tr><td style="color:#666;padding-right:16px;">Job Reference</td><td><strong>${jobRef}</strong></td></tr>
+  ${fulfilmentRows}
 </table>
-<p>The cutting list Excel file is attached.</p>`;
+<p style="margin-top:12px;">The cutting list (Excel) and invoice (PDF) are attached.</p>`;
 }
 
 export async function POST(req) {
   try {
-    const { customerName, customerEmail, jobRef, breakdown } = await req.json();
+    const { customerName, customerEmail, jobRef, breakdown, fulfilment } = await req.json();
 
     if (!customerName || !customerEmail || !jobRef || !breakdown) {
       return Response.json({ ok: false, error: 'Missing required fields' }, { status: 400 });
@@ -141,7 +154,7 @@ export async function POST(req) {
 
     const invoiceBase64 = await getInvoicePDFBase64({
       customerName, customerEmail, jobRef,
-      breakdown, grandMat, grandCut, grandEdge,
+      breakdown, grandMat, grandCut, grandEdge, fulfilment,
     });
     const invoiceBuffer = Buffer.from(invoiceBase64, 'base64');
     const invoiceFilename = `Invoice_${jobRef.replace(/[^a-z0-9]/gi, '_')}_${customerName.replace(/[^a-z0-9]/gi, '_')}.pdf`;
@@ -162,7 +175,7 @@ export async function POST(req) {
       from:    `Cutting Edge <${CUTTING_EDGE_EMAIL}>`,
       to:      CUTTING_EDGE_EMAIL,
       subject: `Order — ${customerName} — ${jobRef}`,
-      html:    adminEmailHTML(customerName, customerEmail, jobRef),
+      html:    adminEmailHTML(customerName, customerEmail, jobRef, fulfilment),
       attachments: [
         {
           filename:    xlsFilename,

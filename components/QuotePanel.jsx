@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { downloadQuotePDF } from '@/lib/pdfExport';
 import { MATERIALS } from '@/lib/constants';
 import NestingDiagram from './NestingDiagram';
+import OrderModal from './OrderModal';
 
 export default function QuotePanel({
   breakdown, grandMat, grandCut, grandEdge,
@@ -11,7 +12,8 @@ export default function QuotePanel({
   showIncVat, customerName, customerEmail, jobRef,
   onShowToast,
 }) {
-  const [ordering, setOrdering] = useState(false);
+  const [ordering,   setOrdering]   = useState(false);
+  const [modalOpen,  setModalOpen]  = useState(false);
 
   const grandTotal = (grandMat ?? 0) + (grandCut ?? 0) + (grandEdge ?? 0);
   const fmt = v => `£${Number(v).toFixed(2)}`;
@@ -37,13 +39,17 @@ export default function QuotePanel({
     }
   }
 
-  async function handlePlaceOrder() {
+  function handlePlaceOrder() {
     if (!customerEmail) {
       onShowToast('⚠ Add a customer email in Job Details to place an order');
       return;
     }
     if (!breakdown) return;
+    setModalOpen(true);
+  }
 
+  async function handleOrderConfirm(fulfilment) {
+    setModalOpen(false);
     setOrdering(true);
     try {
       const res  = await fetch('/api/send-order', {
@@ -54,6 +60,7 @@ export default function QuotePanel({
           customerEmail,
           jobRef: ref,
           breakdown,
+          fulfilment,
         }),
       });
       const data = await res.json();
@@ -119,6 +126,12 @@ export default function QuotePanel({
 
   return (
     <div className="right-panel">
+      <OrderModal
+        open={modalOpen}
+        jobRef={ref}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleOrderConfirm}
+      />
       <QuoteHeader subtitle={subtitle} />
 
       <div className="material-breakdown">

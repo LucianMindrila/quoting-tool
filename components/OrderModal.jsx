@@ -14,7 +14,12 @@ const FALLBACK_HOLIDAYS = [
   '2027-01-01','2027-03-26','2027-03-29','2027-05-03','2027-05-31','2027-08-30','2027-12-27','2027-12-28',
 ];
 
-function toISO(d) { return d.toISOString().split('T')[0]; }
+function toISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 function isWeekend(d) { const w = d.getDay(); return w === 0 || w === 6; }
 
 function addWorkingDays(from, n, holidays) {

@@ -194,6 +194,7 @@ export async function POST(req) {
       type:    fulfilment.type,
       isoDate: fulfilment.isoDate,
       time:    fulfilment.time,
+      address: fulfilment.type === 'delivery' ? fulfilment.address : null,
     }) : null;
 
     const grandMat      = breakdown.reduce((s, b) => s + b.matCost, 0);
@@ -218,7 +219,7 @@ export async function POST(req) {
 
     // Embed structured data for Apps Script calendar automation
     const calendarDataComment = fulfilment?.isoDate
-      ? `<!--CUTTING_EDGE_CALENDAR:${JSON.stringify({ jobRef, customerName, type: fulfilment.type, isoDate: fulfilment.isoDate, time: fulfilment.time })}-->`
+      ? `<!--CUTTING_EDGE_CALENDAR:${JSON.stringify({ jobRef, customerName, type: fulfilment.type, isoDate: fulfilment.isoDate, time: fulfilment.time, address: fulfilment.type === 'delivery' ? fulfilment.address : null })}-->`
       : '';
 
     // ── Email 1: confirmation to customer ────────────────────────────

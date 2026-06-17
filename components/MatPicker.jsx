@@ -8,8 +8,8 @@ import {
 
 const fmt = v => Number(v).toFixed(2);
 
-const MDF_IDS = ['mdf-18-2440','mdf-18-3050','mdf-12','mdf-9','mdf-6'];
-const MRMDF_IDS = ['mrmdf-18-2440','mrmdf-18-3050','mrmdf-12','mrmdf-9','mrmdf-6'];
+const MDF_IDS   = ['mdf-6','mdf-9','mdf-12','mdf-15','mdf-18-2440','mdf-22','mdf-25'];
+const MRMDF_IDS = ['mrmdf-6','mrmdf-9','mrmdf-12','mrmdf-18-2440','mrmdf-25'];
 const FREE_IDS = ['free-issued-2800','free-issued-3050','free-issued-2440'];
 
 const MFC_GROUPS = [2,3,4,5,6,7,8,9,10];

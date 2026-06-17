@@ -80,7 +80,7 @@ select { cursor: pointer; }
 select option { background: var(--surface2); }
 
 /* TABLE */
-.table-wrap { overflow-x: auto; margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.table-wrap { overflow: visible; margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
 table { width: 100%; border-collapse: collapse; min-width: 820px; }
 thead tr { background: var(--surface2); border-bottom: 2px solid var(--accent); }
 th { font-family: var(--font-barlow), sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); padding: 10px 8px; text-align: left; white-space: nowrap; }

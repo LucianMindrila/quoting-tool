@@ -121,10 +121,7 @@ export default function CuttingTable({
                   Grain&nbsp;
                   <span className="help" data-tip="YES = cannot rotate. Grain runs along Length (sheet's long axis).">?</span>
                 </th>
-                <th className="col-edge">
-                  Edge Profile&nbsp;
-                  <span className="help" data-tip="L=Length edge, W=Width edge. E1L=1 long edge. EAR=all round.">?</span>
-                </th>
+                <th className="col-edge">Panel Edging</th>
                 <th className="col-thick">Thickness</th>
                 <th className="col-notes">Notes</th>
                 <th className="col-del">✕</th>

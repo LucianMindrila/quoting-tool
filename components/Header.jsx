@@ -16,8 +16,8 @@ export default function Header() {
         </g>
         <circle cx="42" cy="4" r="2.2" fill="#FFFFFF"/>
         <circle cx="10" cy="60" r="2.2" fill="#FFFFFF"/>
-        <text x="62" y="20" fontFamily="system-ui,sans-serif" fontSize="16" fontWeight="700" fill="#2C2C2A">Cutting</text>
-        <text x="60" y="50" fontFamily="system-ui,sans-serif" fontSize="27" fontWeight="700" fill="#0F6E56">EDGE</text>
+        <text x="62" y="20" fontFamily="system-ui,sans-serif" fontSize="16" fontWeight="700" fill="#ffffff">Cutting</text>
+        <text x="60" y="50" fontFamily="system-ui,sans-serif" fontSize="27" fontWeight="700" fill="#9FE1CB">EDGE</text>
       </svg>
       <span className="header-tag">One stop shop for all your panel processing</span>
     </header>

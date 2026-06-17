@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { DELIVERY_CHARGE } from '@/lib/constants';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -87,7 +88,7 @@ export default function OrderModal({ open, jobRef, onClose, onConfirm }) {
   function handleConfirm() {
     const dateStr = selectedDate.toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
     const isoDate = toISO(selectedDate);
-    onConfirm({ type, date: dateStr, isoDate, time: selectedTime, address: type === 'delivery' ? address : null, earlyDate: showWarning });
+    onConfirm({ type, date: dateStr, isoDate, time: selectedTime, address: type === 'delivery' ? address : null, earlyDate: showWarning, deliveryCharge: type === 'delivery' ? DELIVERY_CHARGE : 0 });
   }
 
   // ── Calendar ──────────────────────────────────────────────────────
@@ -207,7 +208,7 @@ export default function OrderModal({ open, jobRef, onClose, onConfirm }) {
         {type === 'delivery' && (
           <div style={{ marginBottom:20 }}>
             <div style={{ background:'#EFF6FF', border:'1.5px solid #93C5FD', borderRadius:8, padding:'11px 14px', marginBottom:14, fontSize:13, color:'#1E40AF', lineHeight:1.5 }}>
-              ℹ️ <strong>Delivery is available within a 30-mile radius.</strong> An additional delivery charge will apply — we will contact you to confirm the delivery date, time and cost before processing your order.
+              🚚 <strong>Delivery within 30 miles — flat charge of £{DELIVERY_CHARGE}.00.</strong> This will be added to your invoice. We will contact you to confirm your delivery date and time.
             </div>
             <div style={s.sectionLabel}>Delivery Address</div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>

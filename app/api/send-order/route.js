@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { generateXLSBase64, getXLSFilename } from '@/lib/xlsExport';
 import { getInvoicePDFBase64 } from '@/lib/pdfExport';
 import { generateICS } from '@/lib/icsExport';
+import { DELIVERY_CHARGE } from '@/lib/constants';
 
 const CUTTING_EDGE_EMAIL = 'cuttingedgebespoke@gmail.com';
 
@@ -43,7 +44,7 @@ function customerEmailHTML(customerName, jobRef, fulfilment) {
             </tr>` : ''}
           </table>
           ${f.earlyDate ? `<p style="margin:10px 0 0;font-size:12px;color:#b45309;">⚠ Your requested date is within our standard 5 working day lead time. We will contact you shortly to confirm availability.</p>` : ''}
-          ${f.type === 'delivery' ? `<p style="margin:10px 0 0;font-size:12px;color:#1e40af;background:#eff6ff;padding:10px 12px;border-radius:4px;border-left:3px solid #93c5fd;">📦 <strong>Please note:</strong> An additional delivery charge will apply. We will be in touch to confirm your delivery date, time and the delivery cost before we process your order.</p>` : ''}
+          ${f.type === 'delivery' ? `<p style="margin:10px 0 0;font-size:12px;color:#1e40af;background:#eff6ff;padding:10px 12px;border-radius:4px;border-left:3px solid #93c5fd;">🚚 <strong>Delivery charge:</strong> A flat delivery charge of <strong>£75.00</strong> has been added to your invoice. We will be in touch to confirm your delivery date and time.</p>` : ''}
         </td>
       </tr>
     </table>` : '';
@@ -157,6 +158,7 @@ function adminEmailHTML(customerName, customerEmail, jobRef, fulfilment) {
   <tr><td style="color:#666;padding-right:16px;">Delivery Address</td><td>
     ${[f.address.name, f.address.line1, f.address.line2, f.address.postcode].filter(Boolean).join(', ')}
   </td></tr>` : ''}
+  ${f.type === 'delivery' ? `<tr><td style="color:#666;padding-right:16px;">Delivery Charge</td><td><strong>£75.00</strong></td></tr>` : ''}
   ${f.earlyDate ? `<tr><td colspan="2" style="color:#b45309;padding-top:8px;">⚠ Requested date is within 5 working days — contact customer to confirm.</td></tr>` : ''}
   ` : '';
 
@@ -194,13 +196,14 @@ export async function POST(req) {
       time:    fulfilment.time,
     }) : null;
 
-    const grandMat   = breakdown.reduce((s, b) => s + b.matCost, 0);
-    const grandCut   = breakdown.reduce((s, b) => s + b.cutCost, 0);
-    const grandEdge  = breakdown.reduce((s, b) => s + b.edgeCost, 0);
+    const grandMat      = breakdown.reduce((s, b) => s + b.matCost, 0);
+    const grandCut      = breakdown.reduce((s, b) => s + b.cutCost, 0);
+    const grandEdge     = breakdown.reduce((s, b) => s + b.edgeCost, 0);
+    const grandDelivery = fulfilment?.type === 'delivery' ? DELIVERY_CHARGE : 0;
 
     const invoiceBase64 = await getInvoicePDFBase64({
       customerName, customerEmail, jobRef,
-      breakdown, grandMat, grandCut, grandEdge, fulfilment,
+      breakdown, grandMat, grandCut, grandEdge, grandDelivery, fulfilment,
     });
     const invoiceBuffer = Buffer.from(invoiceBase64, 'base64');
     const invoiceFilename = `Invoice_${jobRef.replace(/[^a-z0-9]/gi, '_')}_${customerName.replace(/[^a-z0-9]/gi, '_')}.pdf`;

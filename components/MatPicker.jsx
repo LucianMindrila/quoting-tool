@@ -150,7 +150,6 @@ export default function MatPicker({ open, onClose, onSelect }) {
       code:  MATERIALS[id].display,
       name:  '',
       price: MATERIALS[id].price ? `£${fmt(MATERIALS[id].price)}/sht` : undefined,
-      cut:   `Cut: £${fmt(MATERIALS[id].cutCost)}/sht`,
     })));
   }
 
@@ -160,7 +159,6 @@ export default function MatPicker({ open, onClose, onSelect }) {
       code:  MATERIALS[id].display,
       name:  '',
       price: `£${fmt(MATERIALS[id].price)}/sht`,
-      cut:   `Cut: £${fmt(MATERIALS[id].cutCost)}/sht`,
     })));
   }
 

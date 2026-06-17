@@ -219,7 +219,7 @@ export async function POST(req) {
 
     // Embed structured data for Apps Script calendar automation
     const calendarDataComment = fulfilment?.isoDate
-      ? `<!--CUTTING_EDGE_CALENDAR:${JSON.stringify({ jobRef, customerName, type: fulfilment.type, isoDate: fulfilment.isoDate, time: fulfilment.time, address: fulfilment.type === 'delivery' ? fulfilment.address : null })}-->`
+      ? `<!--CUTTING_EDGE_CALENDAR:${JSON.stringify({ jobRef, customerName, customerEmail, type: fulfilment.type, isoDate: fulfilment.isoDate, time: fulfilment.time, address: fulfilment.type === 'delivery' ? fulfilment.address : null })}-->`
       : '';
 
     // ── Email 1: confirmation to customer ────────────────────────────

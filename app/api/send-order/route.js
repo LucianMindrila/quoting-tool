@@ -3,6 +3,7 @@ import { generateXLSBase64, getXLSFilename } from '@/lib/xlsExport';
 import { getInvoicePDFBase64 } from '@/lib/pdfExport';
 import { generateICS } from '@/lib/icsExport';
 import { DELIVERY_CHARGE } from '@/lib/constants';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const CUTTING_EDGE_EMAIL = 'cuttingedgebespoke@gmail.com';
 
@@ -175,10 +176,30 @@ function adminEmailHTML(customerName, customerEmail, jobRef, fulfilment) {
 
 export async function POST(req) {
   try {
+    // ── Rate limiting ─────────────────────────────────────────────────
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed } = checkRateLimit(ip);
+    if (!allowed) {
+      return Response.json({ ok: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const { customerName, customerEmail, jobRef, breakdown, fulfilment } = await req.json();
 
+    // ── Input validation ──────────────────────────────────────────────
     if (!customerName || !customerEmail || !jobRef || !breakdown) {
       return Response.json({ ok: false, error: 'Missing required fields' }, { status: 400 });
+    }
+    if (typeof customerName !== 'string' || customerName.length > 100) {
+      return Response.json({ ok: false, error: 'Invalid customer name' }, { status: 400 });
+    }
+    if (typeof customerEmail !== 'string' || customerEmail.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+      return Response.json({ ok: false, error: 'Invalid email address' }, { status: 400 });
+    }
+    if (typeof jobRef !== 'string' || jobRef.length > 100) {
+      return Response.json({ ok: false, error: 'Invalid job reference' }, { status: 400 });
+    }
+    if (!Array.isArray(breakdown) || breakdown.length > 50) {
+      return Response.json({ ok: false, error: 'Invalid breakdown data' }, { status: 400 });
     }
 
     if (!process.env.GMAIL_APP_PASSWORD) {

@@ -10,7 +10,9 @@ const fmt = v => Number(v).toFixed(2);
 
 const MDF_IDS   = ['mdf-6','mdf-9','mdf-12','mdf-15','mdf-18-2440','mdf-22','mdf-25'];
 const MRMDF_IDS = ['mrmdf-6','mrmdf-9','mrmdf-12','mrmdf-18-2440','mrmdf-25'];
-const FREE_IDS = ['free-issued-2800','free-issued-3050','free-issued-2440'];
+const FREE_IDS  = ['free-issued-2800','free-issued-3050','free-issued-2440'];
+const VGROOVE_LEN_IDS = ['vgroove-len-9','vgroove-len-12','vgroove-len-18','vgroove-len-25'];
+const VGROOVE_WID_IDS = ['vgroove-wid-9','vgroove-wid-12','vgroove-wid-18','vgroove-wid-25'];
 
 const MFC_GROUPS = [2,3,4,5,6,7,8,9,10];
 
@@ -172,6 +174,28 @@ export default function MatPicker({ open, onClose, onSelect }) {
     })));
   }
 
+  function renderVGroove() {
+    const sections = [
+      { label: 'Groove along length (2440mm)', ids: VGROOVE_LEN_IDS },
+      { label: 'Groove along width (1220mm)',  ids: VGROOVE_WID_IDS },
+    ];
+    return (
+      <>
+        {sections.map(({ label, ids }) => (
+          <div key={label}>
+            <div className="picker-group-label">{label}</div>
+            {renderSimpleList(ids.map(id => ({
+              matId: id,
+              code:  MATERIALS[id].display,
+              name:  '',
+              price: `£${fmt(MATERIALS[id].price)}/sht`,
+            })), true)}
+          </div>
+        ))}
+      </>
+    );
+  }
+
   return (
     <div className="modal-overlay picker-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="picker-box">
@@ -183,10 +207,11 @@ export default function MatPicker({ open, onClose, onSelect }) {
           </div>
           <div className="picker-top-tabs">
             {[
-              { id:'egger', label:'Egger'       },
-              { id:'mdf',   label:'MDF'          },
-              { id:'mrmdf', label:'MR MDF'       },
-              { id:'free',  label:'Free Issued'  },
+              { id:'egger',   label:'Egger'       },
+              { id:'mdf',     label:'MDF'          },
+              { id:'mrmdf',   label:'MR MDF'       },
+              { id:'vgroove', label:'V Groove'     },
+              { id:'free',    label:'Free Issued'  },
             ].map(t => (
               <button
                 key={t.id}
@@ -214,10 +239,11 @@ export default function MatPicker({ open, onClose, onSelect }) {
 
         {/* Body */}
         <div className="picker-body">
-          {tab === 'egger' && renderEgger()}
-          {tab === 'mdf'   && renderMdf()}
-          {tab === 'mrmdf' && renderMrMdf()}
-          {tab === 'free'  && renderFree()}
+          {tab === 'egger'   && renderEgger()}
+          {tab === 'mdf'     && renderMdf()}
+          {tab === 'mrmdf'   && renderMrMdf()}
+          {tab === 'vgroove' && renderVGroove()}
+          {tab === 'free'    && renderFree()}
         </div>
       </div>
     </div>

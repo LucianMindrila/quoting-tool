@@ -121,7 +121,8 @@ function customerEmailHTML(customerName, jobRef, fulfilment) {
             ${fulfilmentBlock}
 
             <p style="font-size:15px;color:#333;line-height:1.6;">
-              A calendar invite is attached — click it to add this ${f.type || 'appointment'} to your calendar.
+              Your cutting list is attached as an Excel file for your records.
+              ${f.isoDate ? `A calendar invite is also attached — click it to add this ${f.type || 'appointment'} to your calendar.` : ''}
             </p>
             <p style="font-size:15px;color:#333;line-height:1.6;">
               If you have any questions or need to make changes, please don't hesitate to get in touch
@@ -250,7 +251,14 @@ export async function POST(req) {
       to:          customerEmail,
       subject:     `Order Confirmation — ${jobRef}`,
       html:        customerEmailHTML(customerName, jobRef, fulfilment),
-      attachments: icsAttachment,
+      attachments: [
+        {
+          filename:    xlsFilename,
+          content:     xlsBuffer,
+          contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+        ...icsAttachment,
+      ],
     });
 
     // ── Email 2: order notification to admin with XLS + invoice ──────

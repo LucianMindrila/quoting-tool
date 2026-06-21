@@ -41,6 +41,7 @@ export default function CuttingRow({ row, rowNum, onChange, onRemove, onOpenPick
         <input
           type="number" min="1" max="999"
           value={row.qty}
+          onFocus={e => e.target.select()}
           onChange={e => update('qty', Math.max(1, parseInt(e.target.value) || 1))}
         />
       </td>

@@ -5,7 +5,7 @@ import { generateICS } from '@/lib/icsExport';
 import { DELIVERY_CHARGE } from '@/lib/constants';
 import { checkRateLimit } from '@/lib/rateLimit';
 
-const CUTTING_EDGE_EMAIL = 'cuttingedgebespoke@gmail.com';
+const CUTTING_EDGE_EMAIL = 'hello@cuttingedgebespoke.co.uk';
 
 function getTransporter() {
   return nodemailer.createTransport({
